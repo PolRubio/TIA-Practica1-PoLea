@@ -1,8 +1,9 @@
 from typing import Callable, List, Optional, Tuple
 
 class TreeNode:
-    def __init__(self, name: str, action: Optional[Callable[[], None]] = None, stock_check: bool = False):
+    def __init__(self, name: str, ingredient: Optional['Ingredient'] = None, action: Optional[Callable[[], None]] = None, stock_check: bool = False):
         self.name: str = name
+        self.ingredient: Optional['Ingredient'] = ingredient
         self.action: Optional[Callable[[], None]] = action
         self.stock_check: bool = stock_check
         self.children: List['TreeNode'] = []
@@ -47,26 +48,26 @@ class CooLex:
         root = TreeNode("Start")
 
         # Bowl node
-        bowl_node = TreeNode("Bowl", action=self.bowls.use, stock_check=True)
+        bowl_node = TreeNode("Bowl", ingredient=self.bowls, action=self.bowls.use, stock_check=True)
         root.add_child(bowl_node)
 
         # Base nodes
-        base_nodes = [TreeNode(base.name, action=base.use, stock_check=True) for base in self.bases]
+        base_nodes = [TreeNode(base.name, ingredient=base, action=base.use, stock_check=True) for base in self.bases]
         bowl_node.children.extend(base_nodes)
 
         # Protein nodes
         for base_node in base_nodes:
-            protein_nodes = [TreeNode(protein.name, action=protein.use, stock_check=True) for protein in self.proteins]
+            protein_nodes = [TreeNode(protein.name, ingredient=protein, action=protein.use, stock_check=True) for protein in self.proteins]
             base_node.children.extend(protein_nodes)
 
             # Topping nodes
             for protein_node in protein_nodes:
-                topping_nodes = [TreeNode(topping.name, action=topping.use, stock_check=True) for topping in self.toppings]
+                topping_nodes = [TreeNode(topping.name, ingredient=topping, action=topping.use, stock_check=True) for topping in self.toppings]
                 protein_node.children.extend(topping_nodes)
 
                 # Sauce nodes
                 for topping_node in topping_nodes:
-                    sauce_nodes = [TreeNode(sauce.name, action=sauce.use, stock_check=True) for sauce in self.sauces]
+                    sauce_nodes = [TreeNode(sauce.name, ingredient=sauce, action=sauce.use, stock_check=True) for sauce in self.sauces]
                     topping_node.children.extend(sauce_nodes)
 
         return root
@@ -76,8 +77,8 @@ class CooLex:
         self.current_position = position
 
     def traverse_and_prepare(self, current_node: TreeNode) -> Optional[str]:
-        if current_node.action:
-            ingredient: Ingredient = current_node.action.__self__  # type: ignore
+        if current_node.action and current_node.ingredient:
+            ingredient: Ingredient = current_node.ingredient
             self.move_to(ingredient.position)
             try:
                 current_node.action()
@@ -155,6 +156,7 @@ sauces = [
     Ingredient("crema tartufata",               6, 75, (70, 10)),
     Ingredient("crema chimichurri",             6, 75, (100, 10))
 ]
+
 # Initialize the CooLex robot
 cooLex = CooLex(bowls, bases, proteins, toppings, sauces)
 

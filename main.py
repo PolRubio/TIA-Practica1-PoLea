@@ -15,6 +15,7 @@ class TreeNode:
 class Ingredient:
     def __init__(self, name: str, stock: int, quantity: int, position: Tuple[int, int]):
         self.name: str = name
+        self.total_stock: int = stock
         self.stock: int = stock
         self.quantity: int = quantity
         self.position: Tuple[int, int] = position
@@ -28,8 +29,8 @@ class Ingredient:
     def check_stock(self) -> bool:
         return self.stock >= self.quantity
 
-    def is_below_threshold(self, threshold: int = 20) -> bool:
-        return self.stock < threshold
+    def is_below_threshold(self, threshold_percentage: float = 20.0) -> bool:
+        return (self.stock / self.total_stock) * 100 < threshold_percentage
 
 
 class CooLex:

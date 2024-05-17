@@ -1,43 +1,45 @@
-class TreeNode:
-    def __init__(self, name, action=None, stock_check=False):
-        self.name = name
-        self.action = action
-        self.stock_check = stock_check
-        self.children = []
+from typing import Callable, List, Optional
 
-    def add_child(self, child_node):
+class TreeNode:
+    def __init__(self, name: str, action: Optional[Callable[[], None]] = None, stock_check: bool = False):
+        self.name: str = name
+        self.action: Optional[Callable[[], None]] = action
+        self.stock_check: bool = stock_check
+        self.children: List['TreeNode'] = []
+
+    def add_child(self, child_node: 'TreeNode') -> None:
         self.children.append(child_node)
 
 
 class Ingredient:
-    def __init__(self, name, stock, quantity):
-        self.name = name
-        self.stock = stock
-        self.quantity = quantity
+    def __init__(self, name: str, stock: int, quantity: int):
+        self.name: str = name
+        self.stock: int = stock
+        self.quantity: int = quantity
 
-    def use(self):
+    def use(self) -> None:
         if self.stock >= self.quantity:
             self.stock -= self.quantity
         else:
             raise ValueError(f"Insufficient stock for {self.name}")
 
-    def check_stock(self):
+    def check_stock(self) -> bool:
         return self.stock >= self.quantity
 
-    def is_below_threshold(self, threshold=20):
+    def is_below_threshold(self, threshold: int = 20) -> bool:
         return self.stock < threshold
 
 
 class CooLex:
-    def __init__(self, bowls, bases, proteins, toppings, sauces):
-        self.bowls = bowls
-        self.bases = bases
-        self.proteins = proteins
-        self.toppings = toppings
-        self.sauces = sauces
-        self.root = self.create_tree()
+    def __init__(self, bowls: Ingredient, bases: List[Ingredient], proteins: List[Ingredient], toppings: List[Ingredient], sauces: List[Ingredient]):
+        self.bowls: Ingredient = bowls
+        self.bases: List[Ingredient] = bases
+        self.proteins: List[Ingredient] = proteins
+        self.toppings: List[Ingredient] = toppings
+        self.sauces: List[Ingredient] = sauces
+        self.root: TreeNode = self.create_tree()
 
-    def create_tree(self):
+    def create_tree(self) -> TreeNode:
         root = TreeNode("Start")
 
         # Bowl node
@@ -65,11 +67,11 @@ class CooLex:
 
         return root
 
-    def traverse_and_prepare(self, current_node):
+    def traverse_and_prepare(self, current_node: TreeNode) -> Optional[str]:
         if current_node.action:
             try:
                 current_node.action()
-                if current_node.stock_check and current_node.action.im_self.is_below_threshold():
+                if current_node.stock_check and current_node.action.__self__.is_below_threshold():
                     self.alert_stock(current_node.name)
             except ValueError as e:
                 return str(e)
@@ -79,9 +81,9 @@ class CooLex:
             if result:
                 return result
 
-        return "Bowl prepared successfully."
+        return None
 
-    def prepare_bowl(self, base_index, protein_index, topping_indices, sauce_index):
+    def prepare_bowl(self, base_index: int, protein_index: int, topping_indices: List[int], sauce_index: int) -> str:
         # Set the correct path based on indices
         base_node = self.root.children[0].children[base_index]
         protein_node = base_node.children[protein_index]
@@ -90,28 +92,28 @@ class CooLex:
 
         # Traverse the tree along the selected path
         result = self.traverse_and_prepare(self.root)
-        return result
+        return result if result else "Bowl prepared successfully."
 
-    def alert_stock(self, ingredient_name):
+    def alert_stock(self, ingredient_name: str) -> None:
         print(f"Alert: Stock of {ingredient_name} is below the threshold.")
 
 
-# Exemple d'estocs inicials
+# Example initial stocks
 bowls = Ingredient("bowls", 100, 1)
 bases = [Ingredient("arros", 100, 250), Ingredient("arros Earth Mama", 100, 250), Ingredient("quinoa", 100, 250)]
 proteins = [Ingredient("pollastre rostit", 100, 200), Ingredient("gall dindi", 100, 200), Ingredient("proteina vegetal", 100, 200), Ingredient("vedella gallega", 100, 200), Ingredient("salmo fumat", 100, 200)]
 toppings = [Ingredient("tomàquet cherry", 100, 100), Ingredient("bolets shiitake", 100, 100), Ingredient("moniato", 100, 100), Ingredient("nous", 100, 100), Ingredient("pinya fumada", 100, 100), Ingredient("mango", 100, 100), Ingredient("alvocat", 100, 100), Ingredient("cigrons picants", 100, 100), Ingredient("formatge fumat", 100, 100), Ingredient("carbassa", 100, 100)]
 sauces = [Ingredient("crema vegetariana jalapeny", 100, 75), Ingredient("crema vegetariana remolatxa", 100, 75), Ingredient("crema tartufata", 100, 75), Ingredient("crema chimichurri", 100, 75)]
 
-# Inicialitzar el robot CooLex
+# Initialize the CooLex robot
 cooLex = CooLex(bowls, bases, proteins, toppings, sauces)
 
-# Exemple de comanda
+# Example order
 base_index = 0  # Arròs
 protein_index = 1  # Gall dindi
 topping_indices = [0, 3, 5]  # Tomàquet cherry, Nous, Mango
 sauce_index = 2  # Crema de tartufata
 
-# Preparar el bowl
+# Prepare the bowl
 result = cooLex.prepare_bowl(base_index, protein_index, topping_indices, sauce_index)
 print(result)

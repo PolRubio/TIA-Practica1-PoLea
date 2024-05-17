@@ -1,5 +1,8 @@
 from typing import Callable, List, Optional, Tuple
 
+class InsufficientStockError(Exception):
+    pass
+
 class TreeNode:
     def __init__(self, name: str, ingredient: Optional['Ingredient'] = None, action: Optional[Callable[[], None]] = None, stock_check: bool = False):
         self.name: str = name
@@ -25,7 +28,7 @@ class Ingredient:
             self.stock -= self.quantity
             print(f"{self.name} used. Remaining stock: {self.stock} units ({round((self.stock / self.total_stock) * 100, 2)}%)")
         else:
-            raise ValueError(f"Insufficient stock for {self.name}")
+            raise InsufficientStockError(f"Insufficient stock for {self.name}")
 
     def check_stock(self) -> bool:
         return self.stock >= self.quantity
@@ -43,31 +46,28 @@ class CooLex:
         self.sauces: List[Ingredient] = sauces
         self.root: TreeNode = self.create_tree()
         self.initial_position: Tuple[int, int] = (310, 310)
+        self.bowl_dispenser_position: Tuple[int, int] = (650, 660)
         self.final_position: Tuple[int, int] = (410, 610)
         self.current_position: Tuple[int, int] = self.initial_position
+        self.total_distance: float = 0.0
 
     def create_tree(self) -> TreeNode:
         root = TreeNode("Start")
 
-        # Bowl node
         bowl_node = TreeNode("Bowl", ingredient=self.bowls, action=self.bowls.use, stock_check=True)
         root.add_child(bowl_node)
 
-        # Base nodes
         base_nodes = [TreeNode(base.name, ingredient=base, action=base.use, stock_check=True) for base in self.bases]
         bowl_node.children.extend(base_nodes)
 
-        # Protein nodes
         for base_node in base_nodes:
             protein_nodes = [TreeNode(protein.name, ingredient=protein, action=protein.use, stock_check=True) for protein in self.proteins]
             base_node.children.extend(protein_nodes)
 
-            # Topping nodes
             for protein_node in protein_nodes:
                 topping_nodes = [TreeNode(topping.name, ingredient=topping, action=topping.use, stock_check=True) for topping in self.toppings]
                 protein_node.children.extend(topping_nodes)
 
-                # Sauce nodes
                 for topping_node in topping_nodes:
                     sauce_nodes = [TreeNode(sauce.name, ingredient=sauce, action=sauce.use, stock_check=True) for sauce in self.sauces]
                     topping_node.children.extend(sauce_nodes)
@@ -76,59 +76,49 @@ class CooLex:
 
     def move_to(self, ingredient: Ingredient) -> None:
         position = ingredient.position
-        print(f"\nMoving to ingredient: {ingredient.name}")
-        print(f"Moving from {self.current_position} to {position} -- Distance: {round(self.distance(self.current_position, position), 2)} u.m.")
+        print(f"\nMoving to : {ingredient.name}")
+        distance = self.distance(self.current_position, position)
+        self.total_distance += distance
+        print(f"Moving from {self.current_position} to {position} -- Distance: {round(distance, 2)} u.m.")
         self.current_position = position
     
     def distance(self, position1: Tuple[int, int], position2: Tuple[int, int]) -> float:
         return ((position1[0] - position2[0]) ** 2 + (position1[1] - position2[1]) ** 2) ** 0.5
 
-    def traverse_and_prepare(self, current_node: TreeNode) -> Optional[str]:
-        if current_node.action and current_node.ingredient:
-            ingredient: Ingredient = current_node.ingredient
+    def traverse_and_prepare(self, next_node: TreeNode) -> None:
+        if next_node.action and next_node.ingredient:
+            ingredient: Ingredient = next_node.ingredient
             self.move_to(ingredient)
-            try:
-                current_node.action()
-                if current_node.stock_check and ingredient.is_below_threshold():
-                    self.alert_stock(ingredient.name)
-            except ValueError as e:
-                return str(e)
-
-        for child in current_node.children:
-            result = self.traverse_and_prepare(child)
-            if result:
-                return result
-
-        return None
+            next_node.action()
+            if next_node.stock_check and ingredient.is_below_threshold():
+                self.alert_stock(ingredient.name)
+        self.current_node = next_node
 
     def prepare_bowl(self, base_index: int, protein_index: int, topping_indices: List[int], sauce_index: int) -> str:
-        # Reset current position to initial position
-        self.current_position = self.initial_position
+        self.reset()
 
-        # Set the correct path based on indices
         base_node = self.root.children[0].children[base_index]
         protein_node = base_node.children[protein_index]
         topping_nodes = [protein_node.children[i] for i in topping_indices]
-        sauce_node = topping_nodes[0].children[sauce_index]  # Assume same sauce for all toppings
+        sauce_node = topping_nodes[0].children[sauce_index]
 
-        # Traverse the tree along the selected path
-        result = self.traverse_and_prepare(self.root)
-        if result:
-            return result
+        path = [base_node, protein_node, *topping_nodes, sauce_node]
+        
+        self.move_to(Ingredient("Bowl Dispenser", 0, 0, self.bowl_dispenser_position))
 
-        # Move to final position
-        self.move_to(self.final_position)
-        return "Bowl prepared successfully."
+        for node in path:
+            self.traverse_and_prepare(node)
+
+        self.move_to(Ingredient("Final Position", 0, 0, self.final_position))
+        return "Bowl prepared successfully with the selected ingredients and a distance of " + str(round(self.total_distance, 2)) + " u.m."
 
     def alert_stock(self, ingredient_name: str) -> None:
         print(f"Alert: Stock of {ingredient_name} is below the threshold.")
-
-    def print_schema(self, node: Optional[TreeNode] = None, indent: str = "") -> None:
-        if node is None:
-            node = self.root
-        print(f"{indent}{node.name}")
-        for child in node.children:
-            self.print_schema(child, indent + "  ")
+        
+    def reset(self):
+        self.current_position = self.initial_position
+        self.current_node = self.root
+        self.total_distance = 0.0
 
 def print_options(options: List[Ingredient]) -> None:
     for i, option in enumerate(options):
@@ -156,7 +146,7 @@ def main():
         Ingredient("Quinoa",            20000, 250, (670, 10))
     ]
     proteins = [
-        Ingredient("Pollastre rostit al carbó",  16000, 200, (450, 10)),
+        Ingredient("Pollastre rostit al carbó",  300, 200, (450, 10)),
         Ingredient("Gall dindi fumat al carbó",  16000, 200, (480, 10)),
         Ingredient("Proteïna vegetal",           16000, 200, (510, 10)),
         Ingredient("Vedella gallega al carbó",   16000, 200, (540, 10)),
@@ -183,25 +173,35 @@ def main():
 
     cooLex = CooLex(bowls, bases, proteins, toppings, sauces)
 
-    base_index = choose_option(bases, "Choose a base:")
-    protein_index = choose_option(proteins, "Choose a protein:")
-    topping_count = int(input("\nEnter the number of toppings you want to add: "))
-    topping_indices = [choose_option(toppings, f"Choose topping {i + 1}:") for i in range(topping_count)]
-    sauce_index = choose_option(sauces, "Choose a sauce:")
+    cont = 'YES'
 
-    # Print the ingredients chosen
-    print("\n")
-    print(f"Base: {bases[base_index].name}")
-    print(f"Protein: {proteins[protein_index].name}")
-    print("Toppings:")
-    for i in topping_indices:
-        print(f"  - {toppings[i].name}")
-    print(f"Sauce: {sauces[sauce_index].name}")
-    print("\n")
+    while cont == 'YES':
+        base_index = choose_option(bases, "Choose a base:")
+        protein_index = choose_option(proteins, "Choose a protein:")
+        topping_indices = [choose_option(toppings, f"Choose topping {i + 1}:") for i in range(3)]
+        sauce_index = choose_option(sauces, "Choose a sauce:")
 
+        print("\n")
+        print(f"Base: {bases[base_index].name}")
+        print(f"Protein: {proteins[protein_index].name}")
+        print("Toppings:")
+        for i in topping_indices:
+            print(f"  - {toppings[i].name}")
+        print(f"Sauce: {sauces[sauce_index].name}")
+        print("\n")
 
-    result = cooLex.prepare_bowl(base_index, protein_index, topping_indices, sauce_index)
-    print(result)
+        try:
+            result = cooLex.prepare_bowl(base_index, protein_index, topping_indices, sauce_index)
+            print(result)
+        except Exception as e:
+            print("\nAn error occurred while preparing the bowl. Please try again.")
+            print(f"Error: {e}")
+
+        print("\n")
+        cont = input("Do you want to prepare another bowl? (Yes/No): ").upper()
+        while cont != 'YES' and cont != 'NO':
+            cont = input("Invalid input. Please enter 'Yes' or 'No': ").upper()
+
 
 if __name__ == "__main__":
     main()

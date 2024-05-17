@@ -125,11 +125,36 @@ class CooLex:
 
 # Example initial stocks and positions
 bowls = Ingredient("bowls", 80, 1, (650, 660))
-bases = [Ingredient("arros", 100, 250, (480, 410)), Ingredient("arros Earth Mama", 100, 250, (490, 410)), Ingredient("quinoa", 100, 250, (500, 410))]
-proteins = [Ingredient("pollastre rostit", 100, 200, (450, 410)), Ingredient("gall dindi", 100, 200, (460, 410)), Ingredient("proteina vegetal", 100, 200, (470, 410)), Ingredient("vedella gallega", 100, 200, (480, 410)), Ingredient("salmo fumat", 100, 200, (490, 410))]
-toppings = [Ingredient("tomàquet cherry", 100, 100, (440, 410)), Ingredient("bolets shiitake", 100, 100, (450, 410)), Ingredient("moniato", 100, 100, (460, 410)), Ingredient("nous", 100, 100, (470, 410)), Ingredient("pinya fumada", 100, 100, (480, 410)), Ingredient("mango", 100, 100, (490, 410)), Ingredient("alvocat", 100, 100, (500, 410)), Ingredient("cigrons picants", 100, 100, (510, 410)), Ingredient("formatge fumat", 100, 100, (520, 410)), Ingredient("carbassa", 100, 100, (530, 410))]
-sauces = [Ingredient("crema vegetariana jalapeny", 100, 75, (490, 410)), Ingredient("crema vegetariana remolatxa", 100, 75, (500, 410)), Ingredient("crema tartufata", 100, 75, (510, 410)), Ingredient("crema chimichurri", 100, 75, (520, 410))]
-
+bases = [
+    Ingredient("arros",             20, 250, (610, 10)),
+    Ingredient("arros Earth Mama",  20, 250, (640, 10)),
+    Ingredient("quinoa",            20, 250, (670, 10))
+]
+proteins = [
+    Ingredient("pollastre rostit",  16, 200, (450, 10)),
+    Ingredient("gall dindi",        16, 200, (480, 10)),
+    Ingredient("proteina vegetal",  16, 200, (510, 10)),
+    Ingredient("vedella gallega",   16, 200, (540, 10)),
+    Ingredient("salmo fumat",       16, 200, (570, 10))
+]
+toppings = [
+    Ingredient("tomàquet cherry",   8, 100, (140, 10)),
+    Ingredient("bolets shiitake",   8, 100, (170, 10)),
+    Ingredient("moniato",           8, 100, (200, 10)),
+    Ingredient("nous",              8, 100, (230, 10)),
+    Ingredient("pinya fumada",      8, 100, (260, 10)),
+    Ingredient("mango",             8, 100, (290, 10)),
+    Ingredient("alvocat",           8, 100, (320, 10)),
+    Ingredient("cigrons picants",   8, 100, (350, 10)),
+    Ingredient("formatge fumat",    8, 100, (380, 10)),
+    Ingredient("carbassa",          8, 100, (410, 10))
+]
+sauces = [
+    Ingredient("crema vegetariana jalapeny",    6, 75, (10, 10)),
+    Ingredient("crema vegetariana remolatxa",   6, 75, (40, 10)),
+    Ingredient("crema tartufata",               6, 75, (70, 10)),
+    Ingredient("crema chimichurri",             6, 75, (100, 10))
+]
 # Initialize the CooLex robot
 cooLex = CooLex(bowls, bases, proteins, toppings, sauces)
 

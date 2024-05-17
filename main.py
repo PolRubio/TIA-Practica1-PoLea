@@ -1,5 +1,10 @@
 from typing import Callable, List, Optional, Tuple
 
+#####################################################
+# Authors: Pol Rubio Borrego, Lea Cornelis Martínez #
+# Date: 2024-05-17 #
+#####################################################
+
 class InsufficientStockError(Exception):
     pass
 

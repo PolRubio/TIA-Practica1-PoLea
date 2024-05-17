@@ -201,7 +201,13 @@ def main():
         cont = input("Do you want to prepare another bowl? (Yes/No): ").upper()
         while cont != 'YES' and cont != 'NO':
             cont = input("Invalid input. Please enter 'Yes' or 'No': ").upper()
-
+        
+        if cont == 'YES':
+            print("\n")
+            print("=============================================")
+            print("\n")
+    
+    print("\nThank you for using CooLex! Have a nice day!")
 
 if __name__ == "__main__":
     main()

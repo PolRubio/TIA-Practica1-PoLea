@@ -124,52 +124,78 @@ class CooLex:
         for child in node.children:
             self.print_schema(child, indent + "  ")
 
+def print_options(options: List[Ingredient]) -> None:
+    for i, option in enumerate(options):
+        print(f"{i + 1}. {option.name}")
 
-# Example initial stocks and positions
-bowls = Ingredient("bowls", 80, 1, (650, 660))
-bases = [
-    Ingredient("arros",             20, 250, (610, 10)),
-    Ingredient("arros Earth Mama",  20, 250, (640, 10)),
-    Ingredient("quinoa",            20, 250, (670, 10))
-]
-proteins = [
-    Ingredient("pollastre rostit",  16, 200, (450, 10)),
-    Ingredient("gall dindi",        16, 200, (480, 10)),
-    Ingredient("proteina vegetal",  16, 200, (510, 10)),
-    Ingredient("vedella gallega",   16, 200, (540, 10)),
-    Ingredient("salmo fumat",       16, 200, (570, 10))
-]
-toppings = [
-    Ingredient("tomàquet cherry",   8, 100, (140, 10)),
-    Ingredient("bolets shiitake",   8, 100, (170, 10)),
-    Ingredient("moniato",           8, 100, (200, 10)),
-    Ingredient("nous",              8, 100, (230, 10)),
-    Ingredient("pinya fumada",      8, 100, (260, 10)),
-    Ingredient("mango",             8, 100, (290, 10)),
-    Ingredient("alvocat",           8, 100, (320, 10)),
-    Ingredient("cigrons picants",   8, 100, (350, 10)),
-    Ingredient("formatge fumat",    8, 100, (380, 10)),
-    Ingredient("carbassa",          8, 100, (410, 10))
-]
-sauces = [
-    Ingredient("crema vegetariana jalapeny",    6, 75, (10, 10)),
-    Ingredient("crema vegetariana remolatxa",   6, 75, (40, 10)),
-    Ingredient("crema tartufata",               6, 75, (70, 10)),
-    Ingredient("crema chimichurri",             6, 75, (100, 10))
-]
+def choose_option(options: List[Ingredient], message: str) -> int:
+    print("\n")
+    print(message)
+    print_options(options)
+    while True:
+        try:
+            choice = int(input("Enter your choice: "))
+            if 1 <= choice <= len(options):
+                return choice - 1
+            else:
+                print("Invalid choice. Please enter a valid option number.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
 
-# Initialize the CooLex robot
-cooLex = CooLex(bowls, bases, proteins, toppings, sauces)
+def main():
+    bowls = Ingredient("bowls", 80, 1, (650, 660))
+    bases = [
+        Ingredient("Arròs",             20000, 250, (610, 10)),
+        Ingredient("Arròs Earth Mama",  20000, 250, (640, 10)),
+        Ingredient("Quinoa",            20000, 250, (670, 10))
+    ]
+    proteins = [
+        Ingredient("Pollastre rostit al carbó",  16000, 200, (450, 10)),
+        Ingredient("Gall dindi fumat al carbó",  16000, 200, (480, 10)),
+        Ingredient("Proteïna vegetal",           16000, 200, (510, 10)),
+        Ingredient("Vedella gallega al carbó",   16000, 200, (540, 10)),
+        Ingredient("Salmó fumat amb fusta",      16000, 200, (570, 10))
+    ]
+    toppings = [
+        Ingredient("Tomàquet cherry",   8000, 100, (140, 10)),
+        Ingredient("Bolets shiitake",   8000, 100, (170, 10)),
+        Ingredient("Moniato",           8000, 100, (200, 10)),
+        Ingredient("Nous",              8000, 100, (230, 10)),
+        Ingredient("Pinya fumada",      8000, 100, (260, 10)),
+        Ingredient("Mango",             8000, 100, (290, 10)),
+        Ingredient("Alvocat",           8000, 100, (320, 10)),
+        Ingredient("Cigrons picants",   8000, 100, (350, 10)),
+        Ingredient("Formatge fumat",    8000, 100, (380, 10)),
+        Ingredient("Carbassa",          8000, 100, (410, 10))
+    ]
+    sauces = [
+        Ingredient("Crema vegetariana amb jalapeny i alfàbrega triturada",  6000, 75, (10, 10)),
+        Ingredient("Crema vegetariana amb remolatxa",                       6000, 75, (40, 10)),
+        Ingredient("Crema de tartufata amb bolets i tòfona negra",          6000, 75, (70, 10)),
+        Ingredient("Crema de chimichurri amb suc de taronja",               6000, 75, (100, 10))
+    ]
 
-# Example order
-base_index = 0  # Arròs
-protein_index = 1  # Gall dindi
-topping_indices = [0, 3, 5]  # Tomàquet cherry, Nous, Mango
-sauce_index = 2  # Crema de tartufata
+    cooLex = CooLex(bowls, bases, proteins, toppings, sauces)
 
-# Prepare the bowl
-result = cooLex.prepare_bowl(base_index, protein_index, topping_indices, sauce_index)
-print(result)
+    base_index = choose_option(bases, "Choose a base:")
+    protein_index = choose_option(proteins, "Choose a protein:")
+    topping_count = int(input("\nEnter the number of toppings you want to add: "))
+    topping_indices = [choose_option(toppings, f"Choose topping {i + 1}:") for i in range(topping_count)]
+    sauce_index = choose_option(sauces, "Choose a sauce:")
 
-# Print the schema of the nodes
-# cooLex.print_schema()
+    # Print the ingredients chosen
+    print("\n")
+    print(f"Base: {bases[base_index].name}")
+    print(f"Protein: {proteins[protein_index].name}")
+    print("Toppings:")
+    for i in topping_indices:
+        print(f"  - {toppings[i].name}")
+    print(f"Sauce: {sauces[sauce_index].name}")
+    print("\n")
+
+
+    result = cooLex.prepare_bowl(base_index, protein_index, topping_indices, sauce_index)
+    print(result)
+
+if __name__ == "__main__":
+    main()

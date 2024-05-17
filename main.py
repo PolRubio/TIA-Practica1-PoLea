@@ -23,6 +23,7 @@ class Ingredient:
     def use(self) -> None:
         if self.stock >= self.quantity:
             self.stock -= self.quantity
+            print(f"{self.name} used. Remaining stock: {self.stock} units ({round((self.stock / self.total_stock) * 100, 2)}%)")
         else:
             raise ValueError(f"Insufficient stock for {self.name}")
 
@@ -73,14 +74,19 @@ class CooLex:
 
         return root
 
-    def move_to(self, position: Tuple[int, int]) -> None:
-        print(f"Moving from {self.current_position} to {position}")
+    def move_to(self, ingredient: Ingredient) -> None:
+        position = ingredient.position
+        print(f"\nMoving to ingredient: {ingredient.name}")
+        print(f"Moving from {self.current_position} to {position} -- Distance: {round(self.distance(self.current_position, position), 2)} u.m.")
         self.current_position = position
+    
+    def distance(self, position1: Tuple[int, int], position2: Tuple[int, int]) -> float:
+        return ((position1[0] - position2[0]) ** 2 + (position1[1] - position2[1]) ** 2) ** 0.5
 
     def traverse_and_prepare(self, current_node: TreeNode) -> Optional[str]:
         if current_node.action and current_node.ingredient:
             ingredient: Ingredient = current_node.ingredient
-            self.move_to(ingredient.position)
+            self.move_to(ingredient)
             try:
                 current_node.action()
                 if current_node.stock_check and ingredient.is_below_threshold():

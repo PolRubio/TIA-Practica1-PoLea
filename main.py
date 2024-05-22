@@ -104,6 +104,7 @@ class CooLex:
 
         base_node = self.root.children[0].children[base_index]
         protein_node = base_node.children[protein_index]
+        topping_indices.sort(reverse=True)
         topping_nodes = [protein_node.children[i] for i in topping_indices]
         sauce_node = topping_nodes[0].children[sauce_index]
 
